@@ -1,0 +1,14 @@
+**/*.pt
+**/*.pth
+**/*.wav
+**/*.mp4
+**/*.jpg
+**/*.json
+**/*.npy
+**/*.ckpt
+**/*.pkl
+**/*.mp3
+**/*.DS_Store
+**/*.tar
+
+__pycache__
