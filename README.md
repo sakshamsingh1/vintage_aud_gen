@@ -5,12 +5,19 @@
 ### 🏠 Prepare environment
 
 ```bash
-conda create -n vintage python=3.9 -y
+conda create -n vintage python=3.10 -y
 conda activate vintage
-pip install torch==2.1.1 torchvision==0.16.1 torchaudio==2.1.1 --index-url https://download.pytorch.org/whl/cu118
 
 git clone https://github.com/sakshamsingh1/vintage_aud_gen.git
-bash requirements.sh
+pip install -r requirements.txt
+pip install ninja
+pip install -v --no-build-isolation -U git+https://github.com/facebookresearch/xformers.git@main
+```
+
+### 🚀 Gradio demo
+You can launch the Gradio interface for VinTAGe by running the following command:
+```
+python app.py --share
 ```
 
 ### 🔈 Inference
@@ -34,6 +41,7 @@ bash scripts/sample.sh
 
 ### 📚 TODO
 - [ ] Training and evaluation.
+- [x] Gradio demo.
 - [x] Inference code.
 
 ## 🤗 Citation
@@ -46,4 +54,4 @@ bash scripts/sample.sh
 }
 ```
 
-The code is based on [SiT](https://github.com/willisma/SiT), [Tango](https://github.com/declare-lab/tango), [TempoTokens](https://github.com/guyyariv/TempoTokens)
+The code is based on [SiT](https://github.com/willisma/SiT), [Tango](https://github.com/declare-lab/tango), [TempoTokens](https://github.com/guyyariv/TempoTokens), [FoleyCrafter](https://github.com/open-mmlab/foleycrafter)

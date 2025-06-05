@@ -12,3 +12,5 @@
 **/*.tar
 
 __pycache__
+.gradio
+gradio_cached_examples
