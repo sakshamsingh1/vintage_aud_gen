@@ -115,13 +115,11 @@ class VisualEmbedder(nn.Module):
     """
     Embeds visual frames into vector representations.
     """
-    def __init__(self, hidden_size, dropout_prob, vid_feat_dir, total_num_frames):
+    def __init__(self, hidden_size, dropout_prob, vid_feat_dir, total_num_frames, demo):
         super().__init__()
-        BASE_DIR = vid_feat_dir
-        self.vid_index_map = torch.load(os.path.join(BASE_DIR, 'vis_idx_map.pt'))
-        self.vid_embeds = torch.load(os.path.join(BASE_DIR, 'vis_feat.pt'))
-        self.vid_masks = torch.load(os.path.join(BASE_DIR, 'vis_mask.pt'))
-        self.vid_flow = torch.load(os.path.join(BASE_DIR, 'vis_flow.pt'))
+        self.vid_feat_dir = vid_feat_dir
+        self.load_feats()  # Load visual features from the specified directory
+        self.demo = demo
 
         self.visual_dim = 512; self.flow_dim = 128; self.idx_dim = 128
 
@@ -138,6 +136,13 @@ class VisualEmbedder(nn.Module):
 
         # getting index embeddings before hand
         self.index_embed = self.index_embedding(self.total_num_frames, self.idx_dim, normalize=True)
+    
+    def load_feats(self):
+        BASE_DIR = self.vid_feat_dir
+        self.vid_index_map = torch.load(os.path.join(BASE_DIR, 'vis_idx_map.pt'))
+        self.vid_embeds = torch.load(os.path.join(BASE_DIR, 'vis_feat.pt'))
+        self.vid_masks = torch.load(os.path.join(BASE_DIR, 'vis_mask.pt'))
+        self.vid_flow = torch.load(os.path.join(BASE_DIR, 'vis_flow.pt'))
 
     @staticmethod
     def index_embedding(total_num_frames, embed_dim, normalize=False):
@@ -216,6 +221,9 @@ class VisualEmbedder(nn.Module):
         return batch_embed, batch_mask, batch_mean
 
     def forward(self, vids, train, curr_device):
+        if self.demo:
+            self.load_feats()  # Reload features for demo mode
+
         if train:
             vids_vis = [self.EMPTY if random.random() < self.dropout_prob else vid for vid in vids]
         else:
@@ -414,6 +422,7 @@ class SiT(nn.Module):
         use_masking=False,
         vid_feat_dir=None,
         cross_att_vis_text=False,
+        demo=False
     ):
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -430,7 +439,7 @@ class SiT(nn.Module):
         self.t_embedder = TimestepEmbedder(hidden_size)
 
         self.y_txt = TextEmbedder(hidden_size, class_dropout_prob)
-        self.y_vis = VisualEmbedder(hidden_size, class_dropout_prob, self.vid_feat_dir, self.total_num_frames)
+        self.y_vis = VisualEmbedder(hidden_size, class_dropout_prob, self.vid_feat_dir, self.total_num_frames, demo)
 
         num_patches = self.x_embedder.num_patches
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches, hidden_size), requires_grad=False)
@@ -577,6 +586,20 @@ class SiT(nn.Module):
         eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
         eps_v, eps_t, eps_uncond = torch.split(eps, len(eps) // 3, dim=0)
         part_eps = eps_uncond + s_vis * (eps_v - eps_uncond) + s_txt * (eps_t - eps_v)
+        eps = torch.cat([part_eps, part_eps, part_eps], dim=0)
+        return torch.cat([eps, rest], dim=1)
+    
+    def forward_with_cfg_VT_demo(self, x, t, y_txt_in, y_vid_in, s_vis=[2.5], s_txt=[2.5]):
+        # x : [B, C, H, W]
+        model_out = self.forward(x, t, y_txt_in, y_vid_in)
+        eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
+        eps_v, eps_t, eps_uncond = torch.split(eps, len(eps) // 3, dim=0)
+
+        s_vis = torch.tensor(s_vis, device=eps.device).view(-1, 1, 1, 1)
+        s_txt = torch.tensor(s_txt, device=eps.device).view(-1, 1, 1, 1)
+
+        part_eps = eps_uncond + s_vis * (eps_v - eps_uncond) + s_txt * (eps_t - eps_v)
+        # part_eps = part_eps.view(-1, *part_eps.shape[2:])
         eps = torch.cat([part_eps, part_eps, part_eps], dim=0)
         return torch.cat([eps, rest], dim=1)
 

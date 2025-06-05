@@ -60,9 +60,6 @@ class TV2A_dataset(torch.utils.data.Dataset):
         vid = f"{row['label']}_{row['file'].split('.')[0]}"
         return aud_path, caption, vid  
 
-
-
-
 class Comp_dataset(torch.utils.data.Dataset):
     def __init__(self, meta_path, base_aud_dir, caption_column='caption'):
         self.meta = pd.read_csv(meta_path)
@@ -201,5 +198,3 @@ def get_text_embedding(prompts):
     valid_token_count = boolean_encoder_mask.sum(dim=-1, keepdim=True)
     mean_embeddings = sum_embeddings / valid_token_count
     return mean_embeddings
-
-
