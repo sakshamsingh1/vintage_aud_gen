@@ -1,6 +1,6 @@
 # VinTAGe: Joint Video and Text Conditioning for Holistic Audio Generation, CVPR 2025
 
-<a href="https://sakshamsingh1.github.io/vintage/"> 🌐 Project Page </a> | <a href="https://arxiv.org/pdf/2412.10768"> 📖 Paper </a> 
+<a href="https://sakshamsingh1.github.io/vintage/"> 🌐 Project Page </a> | <a href="https://arxiv.org/pdf/2412.10768"> 📖 Paper </a> | <a href="https://huggingface.co/datasets/sakshamsingh1/vintage/resolve/main/vintage_bench_data.zip"> 🗄️ VinTAGe-Bench Data </a> 
 
 ### 🏠 Prepare environment
 
@@ -41,16 +41,18 @@ bash scripts/sample.sh
 
 ### 📚 TODO
 - [ ] Training and evaluation.
+- [x] VinTAGe-Bench data.
 - [x] Gradio demo.
 - [x] Inference code.
 
 ## 🤗 Citation
 ```
-@article{kushwaha2024vintage,
+@inproceedings{kushwaha2025vintage,
   title={Vintage: Joint video and text conditioning for holistic audio generation},
   author={Kushwaha, Saksham Singh and Tian, Yapeng},
-  journal={arXiv preprint arXiv:2412.10768},
-  year={2024}
+  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
+  pages={13529--13539},
+  year={2025}
 }
 ```
 
